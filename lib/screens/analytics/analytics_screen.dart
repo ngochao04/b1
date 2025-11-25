@@ -116,6 +116,76 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return amount.toStringAsFixed(0);
   }
 
+  List<Widget> _buildCategoryDetails(Map<String, double> categoryTotals, double totalAmount) {
+    final sortedEntries = categoryTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    
+    return sortedEntries.asMap().entries.map((entry) {
+      final index = entry.key;
+      final category = entry.value.key;
+      final amount = entry.value.value;
+      final percentage = (amount / totalAmount * 100);
+      final color = _getCategoryColor(category, index);
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
+          leading: Container(
+            width: 12,
+            height: 50,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+          title: Text(
+            category,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: LinearProgressIndicator(
+              value: percentage / 100,
+              backgroundColor: color.withOpacity(0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                _currencyFormat.format(amount),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                '${percentage.toStringAsFixed(1)}%',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -433,72 +503,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      ...categoryTotals.entries.toList()
-                        ..sort((a, b) => b.value.compareTo(a.value))
-                        ..asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final category = entry.value.key;
-                          final amount = entry.value.value;
-                          final percentage = (amount / totalAmount * 100);
-                          final color = _getCategoryColor(category, index);
-
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              leading: Container(
-                                width: 12,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                              ),
-                              title: Text(
-                                category,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: LinearProgressIndicator(
-                                  value: percentage / 100,
-                                  backgroundColor: color.withOpacity(0.2),
-                                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                                ),
-                              ),
-                              trailing: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    _currencyFormat.format(amount),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${percentage.toStringAsFixed(1)}%',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
+                      
+                      ..._buildCategoryDetails(categoryTotals, totalAmount),
                     ],
                   ),
                 );
